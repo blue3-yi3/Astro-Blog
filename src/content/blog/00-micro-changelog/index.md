@@ -6,7 +6,6 @@ date: "2026-04-28"
 
 
 
----
 # cursor实时预览设置
 ### 1. 下载Node.js依赖
 1. 打开 Node.js 官网：[https://nodejs.org](https://nodejs.org/)
