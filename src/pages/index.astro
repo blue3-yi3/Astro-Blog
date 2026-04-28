@@ -1,0 +1,141 @@
+---
+import Layout from "@layouts/Layout.astro";
+import Container from "@components/Container.astro";
+import { SITE, HOME, SOCIALS } from "@consts";
+import ArrowCard from "@components/ArrowCard.astro";
+import Link from "@components/Link.astro";
+import { getCollection } from "astro:content";
+import type { CollectionEntry } from "astro:content";
+
+const blog = (await getCollection("blog"))
+  .filter((post) => !post.data.draft)
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, SITE.NUM_POSTS_ON_HOMEPAGE);
+
+const projects: CollectionEntry<"projects">[] = (
+  await getCollection("projects")
+)
+  .filter((project) => !project.data.draft)
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, SITE.NUM_PROJECTS_ON_HOMEPAGE);
+---
+
+<Layout title={HOME.TITLE} description={HOME.DESCRIPTION}>
+  <Container>
+    <aside data-pagefind-ignore>
+      <h1 class="font-semibold text-black dark:text-white">
+        介绍 Astro Micro 🔬
+      </h1>
+      <div class="space-y-16">
+        <section>
+          <article class="space-y-4">
+            <span>
+              <p>
+                Astro Micro 是一个适用于 <Link
+                  href="https://astro.build/">Astro</Link
+                > 的无障碍主题。它基于
+                <Link href="https://github.com/markhorn-dev">
+                  Mark Horn
+                </Link> 的热门主题 <Link
+                  href="https://astro.build/themes/details/astronano/"
+                  >Astro Nano</Link
+                > 构建。和 Nano 一样，Micro 默认不安装任何前端框架。
+              </p>
+              <p>
+                Micro 新增了 <Link href="https://pagefind.app/"
+                  >Pagefind</Link
+                > 搜索、<Link href="https://giscus.app">Giscus</Link> 评论等功能。
+                完整变更列表请查看这篇 <Link
+                  href="/blog/00-micro-changelog">博客文章</Link
+                >。
+              </p>
+            </span>
+            <span class="animate">
+              <p>
+                Micro 依然保留了 Nano 的所有优点：完整的类型安全、站点地图、RSS 订阅，以及 Markdown + MDX 支持。样式基于 TailwindCSS，并预配置了系统、浅色和深色主题。
+              </p>
+              <p>
+                访问
+                <Link href="https://github.com/trevortylerlee/astro-micro">
+                  GitHub 上的 Astro Micro
+                </Link>
+                并 fork 仓库即可开始使用。
+              </p>
+            </span>
+          </article>
+        </section>
+
+        <section class="animate space-y-6">
+          <div class="flex flex-wrap items-center justify-between gap-y-2">
+            <h2 class="font-semibold text-black dark:text-white">
+              最新文章
+            </h2>
+            <Link href="/blog"> 查看全部文章 </Link>
+          </div>
+          <ul class="not-prose flex flex-col gap-4">
+            {
+              blog.map((post) => (
+                <li>
+                  <ArrowCard entry={post} />
+                </li>
+              ))
+            }
+          </ul>
+        </section>
+
+        <section class="animate space-y-6">
+          <div class="flex flex-wrap items-center justify-between gap-y-2">
+            <h2 class="font-semibold text-black dark:text-white">
+              最近项目
+            </h2>
+            <Link href="/projects"> 查看全部项目 </Link>
+          </div>
+          <ul class="not-prose flex flex-col gap-4">
+            {
+              projects.map((project) => (
+                <li>
+                  <ArrowCard entry={project} />
+                </li>
+              ))
+            }
+          </ul>
+        </section>
+
+        <section class="animate space-y-4">
+          <h2 class="font-semibold text-black dark:text-white">
+            联系我
+          </h2>
+          <article>
+            <p>
+              如果你想和我聊点什么，或者只是想打个招呼，可以通过社交媒体联系我，或给我发送电子邮件。
+            </p>
+          </article>
+          <ul class="not-prose flex flex-wrap gap-2">
+            {
+              SOCIALS.map((SOCIAL) => (
+                <li class="flex gap-x-2 text-nowrap">
+                  <Link
+                    href={SOCIAL.HREF}
+                    external
+                    aria-label={`${SITE.TITLE} 的 ${SOCIAL.NAME}`}
+                  >
+                    {SOCIAL.NAME}
+                  </Link>
+                  {"/"}
+                </li>
+              ))
+            }
+            <li class="line-clamp-1">
+              <Link
+                href={`mailto:${SITE.EMAIL}`}
+                aria-label={`发送邮件给 ${SITE.TITLE}`}
+              >
+                {SITE.EMAIL}
+              </Link>
+            </li>
+          </ul>
+        </section>
+      </div>
+    </aside>
+  </Container>
+</Layout>
