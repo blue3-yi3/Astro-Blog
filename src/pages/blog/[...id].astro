@@ -49,6 +49,7 @@ const prevPost = getPrevPost();
 
 const post = Astro.props;
 const { Content, headings } = await render(post);
+const showTableOfContents = post.data.toc !== false;
 ---
 
 <Layout title={post.data.title} description={post.data.description}>
@@ -86,7 +87,7 @@ const { Content, headings } = await render(post);
         ) : null
       }
     </div>
-    {headings.length > 0 && <TableOfContents headings={headings} />}
+    {showTableOfContents && headings.length > 0 && <TableOfContents headings={headings} />}
     <article class="animate">
       <Content />
       <div class="mt-24">

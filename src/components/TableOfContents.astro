@@ -20,7 +20,14 @@ function buildToc(headings: Heading[]) {
     if (heading.depth === 2) {
       toc.push(heading);
     } else {
-      parentHeadings.get(heading.depth - 1).subheadings.push(heading);
+      //parentHeadings.get(heading.depth - 1).subheadings.push(heading);
+      const parent = parentHeadings.get(heading.depth - 1);
+      if (parent) {
+        parent.subheadings.push(heading);
+      } else {
+        // 如果没有父级，直接当成顶级处理（防止炸）
+        toc.push(heading);
+      }
     }
   });
   return toc;

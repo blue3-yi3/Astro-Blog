@@ -72,49 +72,73 @@ const { title, description, image = "/astro-micro.jpg" } = Astro.props;
 
 <script is:inline>
   function init() {
+    window.__astroMicroController?.abort();
+    window.__astroMicroController = new AbortController();
+    const { signal } = window.__astroMicroController;
+
     preloadTheme();
     onScroll();
-    animate();
+    animate(signal);
     updateThemeButtons();
     addCopyCodeButtons();
     setGiscusTheme();
 
     const backToTop = document.getElementById("back-to-top");
-    backToTop?.addEventListener("click", (event) => scrollToTop(event));
+    backToTop?.addEventListener("click", (event) => scrollToTop(event), {
+      signal,
+    });
 
     const backToPrev = document.getElementById("back-to-prev");
-    backToPrev?.addEventListener("click", () => window.history.back());
+    backToPrev?.addEventListener("click", () => window.history.back(), {
+      signal,
+    });
 
     const lightThemeButton = document.getElementById("light-theme-button");
-    lightThemeButton?.addEventListener("click", () => {
-      localStorage.setItem("theme", "light");
-      toggleTheme(false);
-      updateThemeButtons();
-    });
+    lightThemeButton?.addEventListener(
+      "click",
+      () => {
+        localStorage.setItem("theme", "light");
+        toggleTheme(false);
+        updateThemeButtons();
+      },
+      { signal },
+    );
 
     const darkThemeButton = document.getElementById("dark-theme-button");
-    darkThemeButton?.addEventListener("click", () => {
-      localStorage.setItem("theme", "dark");
-      toggleTheme(true);
-      updateThemeButtons();
-    });
+    darkThemeButton?.addEventListener(
+      "click",
+      () => {
+        localStorage.setItem("theme", "dark");
+        toggleTheme(true);
+        updateThemeButtons();
+      },
+      { signal },
+    );
 
     const systemThemeButton = document.getElementById("system-theme-button");
-    systemThemeButton?.addEventListener("click", () => {
-      localStorage.setItem("theme", "system");
-      toggleTheme(window.matchMedia("(prefers-color-scheme: dark)").matches);
-      updateThemeButtons();
-    });
+    systemThemeButton?.addEventListener(
+      "click",
+      () => {
+        localStorage.setItem("theme", "system");
+        toggleTheme(window.matchMedia("(prefers-color-scheme: dark)").matches);
+        updateThemeButtons();
+      },
+      { signal },
+    );
 
     window
       .matchMedia("(prefers-color-scheme: dark)")
-      .addEventListener("change", (event) => {
-        if (localStorage.theme === "system") {
-          toggleTheme(event.matches);
-        }
-      });
+      .addEventListener(
+        "change",
+        (event) => {
+          if (localStorage.theme === "system") {
+            toggleTheme(event.matches);
+          }
+        },
+        { signal },
+      );
 
-    document.addEventListener("scroll", onScroll);
+    document.addEventListener("scroll", onScroll, { signal });
   }
 
   function updateThemeButtons() {
@@ -146,13 +170,20 @@ const { title, description, image = "/astro-micro.jpg" } = Astro.props;
     }
   }
 
-  function animate() {
+  function animate(signal) {
     const animateElements = document.querySelectorAll(".animate");
 
     animateElements.forEach((element, index) => {
-      setTimeout(() => {
+      if (element.classList.contains("show")) return;
+
+      const timeoutId = window.setTimeout(() => {
+        if (signal?.aborted) return;
         element.classList.add("show");
       }, index * 100);
+
+      signal?.addEventListener("abort", () => window.clearTimeout(timeoutId), {
+        once: true,
+      });
     });
   }
 
@@ -230,6 +261,8 @@ const { title, description, image = "/astro-micro.jpg" } = Astro.props;
     }
 
     for (let codeBlock of codeBlocks) {
+      if (codeBlock.dataset.copyButtonBound === "true") continue;
+
       const wrapper = document.createElement("div");
       wrapper.style.position = "relative";
 
@@ -237,6 +270,7 @@ const { title, description, image = "/astro-micro.jpg" } = Astro.props;
       copyButton.innerText = copyButtonLabel;
       copyButton.classList = "copy-code";
 
+      codeBlock.dataset.copyButtonBound = "true";
       codeBlock.setAttribute("tabindex", "0");
       codeBlock.appendChild(copyButton);
 
@@ -261,7 +295,9 @@ const { title, description, image = "/astro-micro.jpg" } = Astro.props;
     }
   };
 
-  document.addEventListener("DOMContentLoaded", () => init());
-  document.addEventListener("astro:after-swap", () => init());
+  if (!window.__astroMicroListenersBound) {
+    document.addEventListener("astro:page-load", () => init());
+    window.__astroMicroListenersBound = true;
+  }
   preloadTheme();
 </script>
