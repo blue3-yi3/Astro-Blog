@@ -1,12 +1,13 @@
 ---
 title: "cursor实时预览设置"
-description: "Features, enhancements, and changes."
 date: "2026-04-28"
+tags:
+  - cursor
 ---
 
 
 
-# cursor实时预览设置
+<!-- # cursor实时预览设置 -->
 ### 1. 下载Node.js依赖
 1. 打开 Node.js 官网：[https://nodejs.org](https://nodejs.org/)
 2. 下载并安装 LTS 版本
