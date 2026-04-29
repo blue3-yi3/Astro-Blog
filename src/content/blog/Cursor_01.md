@@ -2,7 +2,7 @@
 title: "Cursor预览配置"
 description: "在cursor实时预览项目的配置。"
 date: "2026-04-28"
-//toc: false
+toc: false
 tags:
   - cursor
 ---

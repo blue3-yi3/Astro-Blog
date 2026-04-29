@@ -44,7 +44,7 @@ const { Content, headings } = await render(project);
         {project.data.title}
       </h1>
       {
-        (project.data.demoURL || project.data.repoURL) && (
+        (project.data.demoURL || project.data.repoURL || project.data.feishuURL) && (
           <nav class="flex gap-1">
             {project.data.demoURL && (
               <Link href={project.data.demoURL} external>
@@ -52,9 +52,17 @@ const { Content, headings } = await render(project);
               </Link>
             )}
             {project.data.demoURL && project.data.repoURL && <span>/</span>}
+
+
             {project.data.repoURL && (
               <Link href={project.data.repoURL} external>
                 仓库
+              </Link>
+            )}
+
+            {project.data.feishuURL && (
+              <Link href={project.data.feishuURL} external>
+                飞书
               </Link>
             )}
           </nav>

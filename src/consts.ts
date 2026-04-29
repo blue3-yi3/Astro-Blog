@@ -1,9 +1,9 @@
 import type { Metadata, Site, Socials } from "@types";
 
 export const SITE: Site = {
-  TITLE: "Astro Micro",
+  TITLE: "Shan’s Blog",
   DESCRIPTION: "Astro Micro 是一个无障碍、轻量级的博客。",
-  EMAIL: "trevortylerlee@gmail.com",
+  EMAIL: "yishanliang2002@gmail.com",
   NUM_POSTS_ON_HOMEPAGE: 5,
   NUM_PROJECTS_ON_HOMEPAGE: 3,
 };
@@ -21,20 +21,20 @@ export const BLOG: Metadata = {
 export const PROJECTS: Metadata = {
   TITLE: "项目",
   DESCRIPTION:
-    "这里收录了我的项目，并附有代码仓库和在线演示链接。",
+    "这里收录了我的项目。",
 };
 
 export const SOCIALS: Socials = [
-  {
-    NAME: "X（原 Twitter）",
-    HREF: "https://twitter.com/boogerbuttcheek",
-  },
-  {
-    NAME: "GitHub",
-    HREF: "https://github.com/trevortylerlee",
-  },
-  {
-    NAME: "个人网站",
-    HREF: "https://trevortylerlee.com",
-  },
+  // {
+  //   NAME: "X（原 Twitter）",
+  //   HREF: "https://twitter.com/boogerbuttcheek",
+  // },
+  // {
+  //   NAME: "GitHub",
+  //   HREF: "https://github.com/trevortylerlee",
+  // },
+  // {
+  //   NAME: "个人网站",
+  //   HREF: "https://trevortylerlee.com",
+  // },
 ];
