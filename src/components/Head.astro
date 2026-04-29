@@ -296,7 +296,8 @@ const { title, description, image = "/astro-micro.jpg" } = Astro.props;
   };
 
   if (!window.__astroMicroListenersBound) {
-    document.addEventListener("astro:page-load", () => init());
+    document.addEventListener("DOMContentLoaded", () => init());
+    document.addEventListener("astro:after-swap", () => init());
     window.__astroMicroListenersBound = true;
   }
   preloadTheme();
