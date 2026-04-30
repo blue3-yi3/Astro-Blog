@@ -12,7 +12,7 @@ tags:
 ---
 
 ![](/img/gulu/01封面.png)
-![](/img/gulu/02产品介绍+旧版分析.png)
+![](/img/gulu/02.png)
 ![](/img/gulu/03设计推进.png)
 ![](/img/gulu/04首页.png)
 ![](/img/gulu/05下单优化.png)
