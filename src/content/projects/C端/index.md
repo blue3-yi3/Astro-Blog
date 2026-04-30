@@ -10,6 +10,7 @@ tags:
 # repoURL: "https://github.com/markhorn-dev/astro-sphere"
 # toc: false
 ---
+[如果图片显示有问题,点击这里前往飞书文档查看](https://zcn00v6nm7p6.feishu.cn/wiki/M5P1wxRLQiQTTjkq9MQcNyJinqQ)
 
 ![](/img/gulu/01封面.png)
 ![](/img/gulu/02.png)
