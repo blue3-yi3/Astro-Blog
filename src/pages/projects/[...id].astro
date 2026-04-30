@@ -21,6 +21,7 @@ type Props = CollectionEntry<"projects">;
 
 const project = Astro.props;
 const { Content, headings } = await render(project);
+const showTableOfContents = project.data.toc !== false;
 ---
 
 <Layout title={project.data.title} description={project.data.description}>
@@ -43,6 +44,20 @@ const { Content, headings } = await render(project);
       <h1 class="text-3xl font-semibold text-black dark:text-white">
         {project.data.title}
       </h1>
+      {
+        project.data.tags && project.data.tags?.length > 0 ? (
+          <div class="flex gap-2 pt-1">
+            {project.data.tags.map((tag) => (
+              <a
+                href={`/projects/tags/${tag}`}
+                class="rounded-sm border border-black/15 px-2 py-1 text-sm transition-colors duration-300 ease-in-out hover:bg-black/5 hover:text-black focus-visible:bg-black/5 focus-visible:text-black dark:border-white/20 dark:hover:bg-white/5 dark:hover:text-white dark:focus-visible:bg-white/5 dark:focus-visible:text-white"
+              >
+                {tag}
+              </a>
+            ))}
+          </div>
+        ) : null
+      }
       {
         (project.data.demoURL || project.data.repoURL || project.data.feishuURL) && (
           <nav class="flex gap-1">
@@ -69,7 +84,7 @@ const { Content, headings } = await render(project);
         )
       }
     </div>
-    <TableOfContents headings={headings} />
+    {showTableOfContents && headings.length > 0 && <TableOfContents headings={headings} />}
     <article class="animate">
       <Content />
     </article>

@@ -29,6 +29,14 @@ const years = Object.keys(posts).sort((a, b) => parseInt(b) - parseInt(a));
   <Container>
     <aside data-pagefind-ignore>
       <div class="space-y-10">
+        <div class="animate flex justify-start">
+          <a
+            href="/tags"
+            class="rounded-sm border border-black/15 px-3 py-1.5 text-sm transition-colors duration-300 ease-in-out hover:bg-black/5 hover:text-black focus-visible:bg-black/5 focus-visible:text-black dark:border-white/20 dark:hover:bg-white/5 dark:hover:text-white dark:focus-visible:bg-white/5 dark:focus-visible:text-white"
+          >
+            按标签归档
+          </a>
+        </div>
         <div class="space-y-4">
           {
             years.map((year) => (
