@@ -3,7 +3,7 @@ title: "咕噜：宠物APP设计改版"
 description: "UI设计-C端重构项目"
 toc: false
 date: "04/01/2026"
-feishuURL: "https://zcn00v6nm7p6.feishu.cn/wiki/M5P1wxRLQiQTTjkq9MQcNyJinqQ"
+# feishuURL: "https://zcn00v6nm7p6.feishu.cn/wiki/M5P1wxRLQiQTTjkq9MQcNyJinqQ"
 tags:
     - UI设计
 # demoURL: "https://astro-sphere-demo.vercel.app"
