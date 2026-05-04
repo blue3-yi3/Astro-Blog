@@ -47,3 +47,6 @@ tags:
 ">
   图： 关键帧位置
 </p>
+
+- 参考视频：
+[After Effect PV文字教学#18 glyph glide 、textevo文字](https://www.bilibili.com/video/BV1LNxdeMEBC/?share_source=copy_web&vd_source=8569381d5fb6f761771f3023c652dfc5)
