@@ -9,27 +9,36 @@ export interface Heading {
   depth: number;
   slug: string;
   text: string;
+  subheadings?: Heading[];
 }
 
 function buildToc(headings: Heading[]) {
   const toc: Heading[] = [];
-  const parentHeadings = new Map();
+  const parentHeadings = new Map<number, Heading>();
+
   headings.forEach((h) => {
     const heading = { ...h, subheadings: [] };
     parentHeadings.set(heading.depth, heading);
-    if (heading.depth === 2) {
-      toc.push(heading);
-    } else {
-      //parentHeadings.get(heading.depth - 1).subheadings.push(heading);
-      const parent = parentHeadings.get(heading.depth - 1);
-      if (parent) {
-        parent.subheadings.push(heading);
-      } else {
-        // 如果没有父级，直接当成顶级处理（防止炸）
-        toc.push(heading);
+
+    for (const depth of Array.from(parentHeadings.keys())) {
+      if (depth > heading.depth) {
+        parentHeadings.delete(depth);
       }
     }
+
+    let parent: Heading | undefined;
+    for (let depth = heading.depth - 1; depth >= 1; depth--) {
+      parent = parentHeadings.get(depth);
+      if (parent) break;
+    }
+
+    if (parent) {
+      parent.subheadings?.push(heading);
+    } else {
+      toc.push(heading);
+    }
   });
+
   return toc;
 }
 ---
@@ -43,7 +52,7 @@ function buildToc(headings: Heading[]) {
     >目录</summary
   >
   <nav>
-    <ul class="py-3">
+    <ul class="m-0 list-none px-4 py-3">
       {toc.map((heading) => <TableOfContentsHeading heading={heading} />)}
     </ul>
   </nav>

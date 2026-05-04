@@ -86,7 +86,11 @@ const showTableOfContents = post.data.toc !== false;
         ) : null
       }
     </div>
-    {showTableOfContents && headings.length > 0 && <TableOfContents headings={headings} />}
+    {showTableOfContents && headings.length > 0 && (
+      <div class="mb-12">
+        <TableOfContents headings={headings} />
+      </div>
+    )}
     <article class="animate">
       <Content />
       <div class="mt-24">

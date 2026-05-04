@@ -5,19 +5,39 @@ import Link from "./Link.astro";
 // https://kld.dev/building-table-of-contents/
 
 const { heading } = Astro.props;
+const hasSubheadings = heading.subheadings && heading.subheadings.length > 0;
 ---
 
-<li class="list-inside list-disc px-6 py-1.5 text-sm">
-  <Link href={"#" + heading.slug} underline>
-    {heading.text}
-  </Link>
+<li class="list-none py-1.5 pr-6 text-sm">
   {
-    heading.subheadings.length > 0 && (
-      <ul class="translate-x-3">
-        {heading.subheadings.map((subheading: Heading) => (
-          <Astro.self heading={subheading} />
-        ))}
-      </ul>
+    heading.depth === 1 && hasSubheadings ? (
+      <details open>
+        <summary class="cursor-pointer">
+          <Link href={"#" + heading.slug} underline={false}>
+            <span style={{ marginLeft: "7px" }}>
+              {heading.text}
+            </span>
+          </Link>
+        </summary>
+        <ul class="m-0 mt-3 list-none py-0 pl-5">
+          {heading.subheadings?.map((subheading: Heading) => (
+            <Astro.self heading={subheading} />
+          ))}
+        </ul>
+      </details>
+    ) : (
+      <>
+        <Link href={"#" + heading.slug} underline={false}>
+          {heading.text}
+        </Link>
+        {hasSubheadings && (
+          <ul class="m-0 list-none py-0 pl-5">
+            {heading.subheadings?.map((subheading: Heading) => (
+              <Astro.self heading={subheading} />
+            ))}
+          </ul>
+        )}
+      </>
     )
   }
 </li>
