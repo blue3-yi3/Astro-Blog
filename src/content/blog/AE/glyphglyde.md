@@ -10,7 +10,7 @@ tags:
 # toc: false
 ---
 - 应用预设后的默认动效：
-<img src="/img/glyphglyde/defalut.gif" width="450" />
+<img src="/img/glyphglyde/default.gif" width="450" />
 - 应用更多方向选项：
 <img src="/img/glyphglyde/direction.gif" width="450" />
 
