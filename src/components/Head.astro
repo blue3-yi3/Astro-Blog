@@ -82,6 +82,7 @@ const { title, description, image = "/astro-micro.jpg" } = Astro.props;
     updateThemeButtons();
     addCopyCodeButtons();
     setGiscusTheme();
+    initPalette();
 
     const backToTop = document.getElementById("back-to-top");
     backToTop?.addEventListener("click", (event) => scrollToTop(event), {
@@ -241,6 +242,369 @@ const { title, description, image = "/astro-micro.jpg" } = Astro.props;
     } else {
       toggleTheme(window.matchMedia("(prefers-color-scheme: dark)").matches);
     }
+  }
+
+  function normalizePaletteHex(hex) {
+    return String(hex || "")
+      .trim()
+      .replace(/^#/, "")
+      .toUpperCase();
+  }
+
+  function isValidPaletteHex(hex) {
+    return /^[0-9A-F]{6}$/i.test(normalizePaletteHex(hex));
+  }
+
+  function hexToRgb(hex) {
+    const normalized = normalizePaletteHex(hex);
+
+    if (!isValidPaletteHex(normalized)) return null;
+
+    return {
+      r: parseInt(normalized.slice(0, 2), 16),
+      g: parseInt(normalized.slice(2, 4), 16),
+      b: parseInt(normalized.slice(4, 6), 16),
+    };
+  }
+
+  function isLightPaletteColor(hex) {
+    const rgb = hexToRgb(hex);
+    if (!rgb) return false;
+
+    const toLinear = (value) => {
+      const channel = value / 255;
+      return channel <= 0.03928
+        ? channel / 12.92
+        : Math.pow((channel + 0.055) / 1.055, 2.4);
+    };
+
+    const luminance =
+      0.2126 * toLinear(rgb.r) +
+      0.7152 * toLinear(rgb.g) +
+      0.0722 * toLinear(rgb.b);
+
+    return luminance > 0.52;
+  }
+
+  function isLightPaletteGradient(fromHex, toHex) {
+    const from = hexToRgb(fromHex);
+    const to = hexToRgb(toHex);
+
+    if (!from || !to) return false;
+
+    const mixedHex = [
+      Math.round((from.r + to.r) / 2),
+      Math.round((from.g + to.g) / 2),
+      Math.round((from.b + to.b) / 2),
+    ]
+      .map((value) => value.toString(16).padStart(2, "0"))
+      .join("");
+
+    return isLightPaletteColor(mixedHex);
+  }
+
+  function getPaletteTextColor(card) {
+    const color = card.dataset.color;
+    const gradientFrom = card.dataset.gradientFrom;
+    const gradientTo = card.dataset.gradientTo;
+
+    if (color && isValidPaletteHex(color)) {
+      return isLightPaletteColor(color) ? "#111827" : "#ffffff";
+    }
+
+    if (
+      gradientFrom &&
+      gradientTo &&
+      isValidPaletteHex(gradientFrom) &&
+      isValidPaletteHex(gradientTo)
+    ) {
+      return isLightPaletteGradient(gradientFrom, gradientTo)
+        ? "#111827"
+        : "#ffffff";
+    }
+
+    return "#ffffff";
+  }
+
+  function getPaletteToast() {
+    let toast = document.querySelector(".md-palette-toast");
+
+    if (!toast) {
+      toast = document.createElement("div");
+      toast.className = "md-palette-toast";
+      toast.setAttribute("role", "status");
+      toast.setAttribute("aria-live", "polite");
+      document.body.appendChild(toast);
+    }
+
+    return toast;
+  }
+
+  let paletteToastTimer;
+
+  function showPaletteToast(message) {
+    const toast = getPaletteToast();
+    toast.textContent = message;
+    toast.classList.add("md-palette-toast-show");
+
+    window.clearTimeout(paletteToastTimer);
+    paletteToastTimer = window.setTimeout(() => {
+      toast.classList.remove("md-palette-toast-show");
+    }, 1300);
+  }
+
+  async function copyPaletteText(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return;
+    }
+
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.setAttribute("readonly", "");
+    textarea.style.position = "fixed";
+    textarea.style.left = "-9999px";
+    textarea.style.top = "0";
+
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand("copy");
+    textarea.remove();
+  }
+
+  function createPaletteHexButton(hex) {
+    const button = document.createElement("button");
+    button.className = "md-palette-hex";
+    button.type = "button";
+    button.textContent = `#${normalizePaletteHex(hex)}`;
+    return button;
+  }
+
+  function createSolidPaletteCard(hex) {
+    const card = document.createElement("div");
+    card.className = "md-palette-card";
+    card.dataset.color = `#${normalizePaletteHex(hex)}`;
+    card.appendChild(createPaletteHexButton(hex));
+    return card;
+  }
+
+  function createGradientPaletteCard(fromHex, toHex) {
+    const card = document.createElement("div");
+    const values = document.createElement("div");
+
+    card.className = "md-palette-card md-palette-card-gradient";
+    card.dataset.gradient = `linear-gradient(90deg, #${normalizePaletteHex(fromHex)} 0%, #${normalizePaletteHex(toHex)} 100%)`;
+    card.dataset.gradientFrom = `#${normalizePaletteHex(fromHex)}`;
+    card.dataset.gradientTo = `#${normalizePaletteHex(toHex)}`;
+
+    values.className = "md-palette-gradient-values";
+    values.appendChild(createPaletteHexButton(fromHex));
+    values.appendChild(createPaletteHexButton(toHex));
+    card.appendChild(values);
+
+    return card;
+  }
+
+  function parsePaletteHexes(text) {
+    return Array.from(String(text || "").matchAll(/#?([0-9A-F]{6})\b/gi)).map(
+      (match) => normalizePaletteHex(match[1]),
+    );
+  }
+
+  function flushSolidPaletteGroup(palette, solidHexes) {
+    if (solidHexes.length === 0) return;
+
+    const group = document.createElement("div");
+    group.className = "md-palette-solid-group";
+
+    solidHexes.forEach((hex) => {
+      group.appendChild(createSolidPaletteCard(hex));
+    });
+
+    palette.appendChild(group);
+    solidHexes.length = 0;
+  }
+
+  function isPaletteSourceElement(element) {
+    if (!(element instanceof Element)) return false;
+
+    const tagName = element.tagName.toLowerCase();
+
+    return (
+      element.hasAttribute("data-palette-color") ||
+      element.hasAttribute("data-palette-gradient") ||
+      tagName === "palette-color" ||
+      tagName === "palette-gradient"
+    );
+  }
+
+  function parsePaletteItemsFromElements(palette) {
+    return Array.from(palette.children).flatMap((element) => {
+      const hexes = parsePaletteHexes(element.textContent);
+      const tagName = element.tagName.toLowerCase();
+
+      if (
+        element.hasAttribute("data-palette-color") ||
+        tagName === "palette-color"
+      ) {
+        const hex = hexes[0];
+        return hex && isValidPaletteHex(hex) ? [{ type: "solid", hex }] : [];
+      }
+
+      if (
+        element.hasAttribute("data-palette-gradient") ||
+        tagName === "palette-gradient"
+      ) {
+        const [fromHex, toHex] = hexes;
+        return fromHex &&
+          toHex &&
+          isValidPaletteHex(fromHex) &&
+          isValidPaletteHex(toHex)
+          ? [{ type: "gradient", fromHex, toHex }]
+          : [];
+      }
+
+      return [];
+    });
+  }
+
+  function getPaletteTrailingNodes(palette) {
+    const children = Array.from(palette.childNodes);
+    const lastSourceIndex = children.findLastIndex(
+      (node) => node.nodeType === Node.ELEMENT_NODE && isPaletteSourceElement(node),
+    );
+
+    if (lastSourceIndex === -1) return [];
+
+    return children.slice(lastSourceIndex + 1).filter((node) => {
+      return node.nodeType !== Node.TEXT_NODE || node.textContent.trim() !== "";
+    });
+  }
+
+  function getPaletteMarkup(palette) {
+    return palette.dataset.paletteSource || palette.innerHTML;
+  }
+
+  function parseSimplePaletteItems(markup) {
+    const items = [];
+    const pattern = /<(palette-color|palette-gradient)\b[^>]*>([\s\S]*?)<\/\1>/gi;
+    let match;
+
+    while ((match = pattern.exec(String(markup || "")))) {
+      const tagName = match[1].toLowerCase();
+      const hexes = parsePaletteHexes(match[2]);
+
+      if (tagName === "palette-color") {
+        const hex = hexes[0];
+        if (hex && isValidPaletteHex(hex)) {
+          items.push({ type: "solid", hex });
+        }
+      } else if (tagName === "palette-gradient") {
+        const [fromHex, toHex] = hexes;
+        if (
+          fromHex &&
+          toHex &&
+          isValidPaletteHex(fromHex) &&
+          isValidPaletteHex(toHex)
+        ) {
+          items.push({ type: "gradient", fromHex, toHex });
+        }
+      }
+    }
+
+    return items;
+  }
+
+  function upgradeSimplePalette(palette) {
+    if (palette.dataset.paletteUpgraded === "true") return;
+
+    const items = palette.hasAttribute("data-color-palette")
+      ? parsePaletteItemsFromElements(palette)
+      : parsePaletteItemsFromElements(palette).concat(
+          parseSimplePaletteItems(getPaletteMarkup(palette)),
+        );
+    const upgradedPalette = document.createElement("div");
+    const solidHexes = [];
+    const trailingNodes = getPaletteTrailingNodes(palette);
+
+    upgradedPalette.className = "md-palette";
+
+    items.forEach((item) => {
+      if (item.type === "solid") {
+        solidHexes.push(item.hex);
+        return;
+      }
+
+      if (item.type === "gradient") {
+        flushSolidPaletteGroup(upgradedPalette, solidHexes);
+        upgradedPalette.appendChild(
+          createGradientPaletteCard(item.fromHex, item.toHex),
+        );
+      }
+    });
+
+    flushSolidPaletteGroup(upgradedPalette, solidHexes);
+
+    palette.replaceChildren(...upgradedPalette.children);
+    palette.className = upgradedPalette.className;
+    palette.dataset.paletteUpgraded = "true";
+
+    if (trailingNodes.length > 0) {
+      palette.after(...trailingNodes);
+    }
+  }
+
+  function initPalette() {
+    document.querySelectorAll("[data-color-palette], palette-block, color-palette").forEach((palette) => {
+      upgradeSimplePalette(palette);
+    });
+
+    document.querySelectorAll(".md-palette").forEach((palette) => {
+      palette.querySelectorAll(".md-palette-card").forEach((card) => {
+        const color = card.dataset.color;
+        const gradient = card.dataset.gradient;
+
+        if (gradient) {
+          card.style.background = gradient;
+        } else if (color && isValidPaletteHex(color)) {
+          card.style.background = `#${normalizePaletteHex(color)}`;
+        }
+
+        card.style.setProperty("--md-palette-text", getPaletteTextColor(card));
+      });
+
+      palette.querySelectorAll(".md-palette-hex").forEach((button) => {
+        if (button.dataset.paletteBound === "true") return;
+        button.dataset.paletteBound = "true";
+
+        button.addEventListener("click", async (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+
+          const hex = normalizePaletteHex(button.textContent);
+          if (!isValidPaletteHex(hex)) {
+            showPaletteToast("Invalid HEX");
+            return;
+          }
+
+          const originalText = button.textContent;
+
+          try {
+            await copyPaletteText(hex);
+            button.classList.add("md-palette-copied");
+            button.textContent = "Copied";
+            showPaletteToast(`Copied ${hex}`);
+
+            window.setTimeout(() => {
+              button.classList.remove("md-palette-copied");
+              button.textContent = originalText;
+            }, 900);
+          } catch {
+            showPaletteToast("Copy failed");
+          }
+        });
+      });
+    });
   }
 
   function addCopyCodeButtons() {
